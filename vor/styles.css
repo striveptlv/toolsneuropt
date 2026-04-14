@@ -382,18 +382,20 @@ button:disabled {
 
 .rating-grid {
   display: grid;
-  grid-template-columns: repeat(11, minmax(72px, 1fr));
-  gap: 0.8rem;
-  overflow-x: auto;
-  padding-bottom: 0.35rem;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
 
 .rating-button {
-  min-height: 100px;
+  min-height: 84px;
   font-family: "Avenir Next Condensed", "Franklin Gothic Medium", "Trebuchet MS", sans-serif;
   font-size: clamp(1.8rem, 5vw, 2.8rem);
-  background: white;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.82);
   color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: none;
 }
 
 .rating-button.selected {
@@ -401,6 +403,25 @@ button:disabled {
   color: white;
   border-color: transparent;
   box-shadow: 0 16px 28px rgba(13, 107, 87, 0.2);
+  transform: translateY(-2px);
+}
+
+.linear-scale {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 22px;
+  margin-bottom: 0.75rem;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid var(--line);
+}
+
+.scale-bar {
+  height: 10px;
+  border-radius: 999px;
+  flex: 1;
+  background: linear-gradient(90deg, #2cb67d 0%, #ffd166 50%, #ef476f 100%);
 }
 
 textarea {
@@ -427,7 +448,7 @@ textarea {
   }
 
   .rating-grid {
-    grid-template-columns: repeat(11, minmax(72px, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
   .section-heading,
