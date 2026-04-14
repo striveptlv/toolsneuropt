@@ -415,6 +415,11 @@
  
 <div class="page-content">
     <body>
+      <script>
+  if (!sessionStorage.getItem('strive_auth')) {
+    window.location.href = './login.html';
+  }
+</script>
     <main class="page">
       <section class="hero">
         <p class="eyebrow">STRIVE Physical Therapy | Las Vegas</p>
