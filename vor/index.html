@@ -9,14 +9,26 @@
 <body>
   <main class="app-shell">
     <header id="hero-banner" class="hero">
-      <p class="eyebrow">Gaze Stability Exercise</p>
-      <h1>VOR Exercise Tool</h1>
-      <div class="vor-subheader">
-  <p><strong>Setup:</strong> Select speed (BPM), duration, and direction.</p>
-  <p><strong>Patient Position:</strong> Document position and surface.</p>
-  <p><strong>Instructions:</strong> Keep eyes on target, move head at set speed with the beat, keep target clear, report symptoms.</p>
-  <p><strong>Start:</strong> 3–2–1 countdown will begin the activity.</p>
-</div>
+      <div class="hero-topbar">
+        <div class="brand-block">
+          <a class="brand-mark" href="../index.html" aria-label="Back to vestibular home">
+            <img src="https://striveptlv.com/logo.png" alt="STRIVE Physical Therapy logo">
+          </a>
+          <div class="brand-copy">
+            <p class="eyebrow">STRIVE Physical Therapy Las Vegas</p>
+            <h1>Gaze Stability</h1>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <div class="theme-dock" aria-label="Theme">
+            <button type="button" class="theme-icon is-active" data-theme="device" aria-label="Follow device theme" title="Follow device">Auto</button>
+            <button type="button" class="theme-icon" data-theme="dark" aria-label="Dark theme" title="Dark theme">Dark</button>
+            <button type="button" class="theme-icon" data-theme="light" aria-label="Light theme" title="Light theme">Light</button>
+          </div>
+          <button id="back-to-top" class="hero-action secondary home-button" type="button" aria-label="Back to home">Home</button>
+          <a class="hero-action primary" href="https://calendly.com/dpt-striveptlv/30min" target="_blank" rel="noopener">Book Consultation</a>
+        </div>
+      </div>
     </header>
 
     <section id="setup-screen" class="screen active card">
@@ -46,7 +58,7 @@
         </label>
       </div>
 
-      <div class="grid three-up">
+      <div class="grid four-up">
         <label class="field">
           <span>Movement Plane</span>
           <select id="plane">
@@ -71,17 +83,18 @@
             <option value="Moving">Moving</option>
           </select>
         </label>
+
+        <label class="field">
+          <span>Theme</span>
+          <select id="theme">
+            <option value="device">Device</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+          </select>
+        </label>
       </div>
 
       <div class="grid two-up">
-        <label class="toggle-card">
-          <div>
-            <span class="toggle-title">Audible Metronome</span>
-            <p>Play a short beep on each beat.</p>
-          </div>
-          <input id="beep-enabled" type="checkbox" checked>
-        </label>
-
         <div class="summary-card">
           <span>Preview</span>
           <p id="setup-preview">Horizontal head turns for 30 seconds at 60 BPM.</p>

@@ -14,7 +14,6 @@ const controls = {
   plane: document.getElementById("plane"),
   position: document.getElementById("position"),
   surface: document.getElementById("surface"),
-  beepEnabled: document.getElementById("beep-enabled"),
 };
 
 const display = {
@@ -35,6 +34,7 @@ const display = {
 };
 
 const actions = {
+  backToTop: document.getElementById("back-to-top"),
   start: document.getElementById("start-button"),
   finishEarly: document.getElementById("generate-early-button"),
   endSet: document.getElementById("end-set-button"),
@@ -43,6 +43,7 @@ const actions = {
 };
 
 const ratingGrid = document.getElementById("rating-grid");
+const themeButtons = [...document.querySelectorAll(".theme-icon")];
 
 const MAX_SETS = 3;
 let setResults = [];
@@ -53,10 +54,14 @@ let sessionTimer = null;
 let beatTimer = null;
 let exerciseStartedAt = null;
 let audioContext = null;
+let deviceThemeQuery = null;
+let currentThemeMode = "device";
 
 function initialize() {
+  setupThemeListener();
   buildRatingButtons();
   bindEvents();
+  applyTheme();
   updateSetupPreview();
   refreshSessionState();
 }
@@ -67,11 +72,51 @@ function bindEvents() {
     control.addEventListener("change", updateSetupPreview);
   });
 
+  themeButtons.forEach((button) => {
+    button.addEventListener("click", () => applyTheme(button.dataset.theme));
+  });
+
+  actions.backToTop.addEventListener("click", goBackToTop);
   actions.start.addEventListener("click", startCountdown);
   actions.endSet.addEventListener("click", () => finishExercise(true));
   actions.saveRating.addEventListener("click", saveRating);
   actions.finishEarly.addEventListener("click", generateDocumentation);
   actions.restart.addEventListener("click", resetSession);
+}
+
+function setupThemeListener() {
+  if (!window.matchMedia) {
+    return;
+  }
+
+  deviceThemeQuery = window.matchMedia("(prefers-color-scheme: light)");
+  const syncTheme = () => {
+    if (currentThemeMode === "device") {
+      applyTheme();
+    }
+  };
+
+  if (deviceThemeQuery.addEventListener) {
+    deviceThemeQuery.addEventListener("change", syncTheme);
+  } else if (deviceThemeQuery.addListener) {
+    deviceThemeQuery.addListener(syncTheme);
+  }
+}
+
+function syncThemeButtons() {
+  themeButtons.forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.theme === currentThemeMode);
+  });
+}
+
+function applyTheme(mode = currentThemeMode) {
+  currentThemeMode = mode;
+  const resolvedTheme = mode === "device"
+    ? (deviceThemeQuery?.matches ? "light" : "dark")
+    : mode;
+
+  document.body.dataset.theme = resolvedTheme;
+  syncThemeButtons();
 }
 
 function buildRatingButtons() {
@@ -87,14 +132,18 @@ function buildRatingButtons() {
   }
 }
 
+function goBackToTop() {
+  window.location.href = "../index.html";
+}
+
 function updateSetupPreview() {
+  applyTheme();
   const config = getCurrentConfig();
   display.bpmValue.textContent = config.bpm;
   display.durationValue.textContent = config.duration;
   display.setupPreview.textContent =
     `${config.plane} head turns for ${config.duration} seconds at ${config.bpm} BPM, ` +
-    `${config.position.toLowerCase()} on ${config.surface.toLowerCase()} surface` +
-    `${config.beepEnabled ? ", with audible beep." : ", without audible beep."}`;
+    `${config.position.toLowerCase()} on ${config.surface.toLowerCase()} surface, with audible beep.`;
 }
 
 function getCurrentConfig() {
@@ -104,7 +153,6 @@ function getCurrentConfig() {
     plane: controls.plane.value,
     position: controls.position.value,
     surface: controls.surface.value,
-    beepEnabled: controls.beepEnabled.checked,
   };
 }
 
@@ -123,7 +171,7 @@ function showScreen(name) {
   screens[name].classList.add("active");
   heroBanner.classList.toggle(
     "hidden",
-    name === "countdown" || name === "exercise" || name === "rating"
+    name === "countdown" || name === "exercise"
   );
 }
 
@@ -141,19 +189,19 @@ function startCountdown() {
   let count = 3;
   display.countdownNumber.textContent = String(count);
   showScreen("countdown");
-  playBeep(880, 0.08, currentSetConfig.beepEnabled);
+  playBeep(880, 0.1, true);
 
   countdownTimer = setInterval(() => {
     count -= 1;
 
     if (count > 0) {
       display.countdownNumber.textContent = String(count);
-      playBeep(880, 0.08, currentSetConfig.beepEnabled);
+      playBeep(880, 0.1, true);
       return;
     }
 
     clearInterval(countdownTimer);
-    playBeep(1040, 0.12, currentSetConfig.beepEnabled);
+    playBeep(880, 0.12, true);
     beginExercise();
   }, 1000);
 }
@@ -184,12 +232,10 @@ function beginExercise() {
 
   const beatInterval = (60 / currentSetConfig.bpm) * 1000;
   beatTimer = setInterval(() => {
-    playBeep(740, 0.06, currentSetConfig.beepEnabled);
+    playBeep(880, 0.08, true);
   }, beatInterval);
 
-  if (currentSetConfig.beepEnabled) {
-    playBeep(740, 0.06, true);
-  }
+  playBeep(880, 0.08, true);
 }
 
 function finishExercise(endedEarly) {
@@ -271,8 +317,7 @@ function buildSoapNote() {
   const objectiveSets = setResults
     .map((set, index) => {
       const durationText = `${set.completedDuration} seconds${set.endedEarly ? " (ended early)" : ""}`;
-      const beepText = set.beepEnabled ? "with audible metronome" : "without audible metronome";
-      return `Set ${index + 1}: gaze stability exercise completed in ${set.position.toLowerCase()} on ${set.surface.toLowerCase()} surface, ${set.plane.toLowerCase()} head movement, ${set.bpm} BPM, ${durationText}, ${beepText}`;
+      return `Set ${index + 1}: gaze stability exercise completed in ${set.position.toLowerCase()} on ${set.surface.toLowerCase()} surface, ${set.plane.toLowerCase()} head movement, ${set.bpm} BPM, ${durationText}, with audible metronome`;
     })
     .join(". ");
 
@@ -319,7 +364,7 @@ function playBeep(frequency, duration, enabled) {
   oscillator.type = "sine";
   oscillator.frequency.value = frequency;
   gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.12, audioContext.currentTime + 0.01);
+  gainNode.gain.exponentialRampToValueAtTime(0.22, audioContext.currentTime + 0.01);
   gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
 
   oscillator.connect(gainNode);
