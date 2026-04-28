@@ -552,21 +552,54 @@ body[data-theme="light"] .exercise-stage::after {
   pointer-events: none;
 }
 
-.exercise-stage.bg-subtle {
-  animation: subtleStageShift 8s ease-in-out infinite alternate;
-}
-
-.exercise-stage.bg-optokinetic::before {
+.exercise-stage.bg-shift::before,
+.exercise-stage.bg-shift::after,
+.exercise-stage.bg-stripes-horizontal::before,
+.exercise-stage.bg-stripes-vertical::before {
   content: "";
   position: absolute;
   inset: -20%;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.exercise-stage.bg-stripes-horizontal::before {
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255,255,255,0.05) 0 28px,
+    rgba(0,0,0,0.2) 28px 56px
+  );
+  animation: driftVertical 7s linear infinite;
+}
+
+.exercise-stage.bg-stripes-vertical::before {
   background: repeating-linear-gradient(
     90deg,
     rgba(255,255,255,0.05) 0 28px,
     rgba(0,0,0,0.2) 28px 56px
   );
-  animation: driftStripes 7s linear infinite;
-  opacity: 0.75;
+  animation: driftHorizontal 7s linear infinite;
+}
+
+.exercise-stage.bg-shift::before {
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,0.05) 0 28px,
+    rgba(0,0,0,0.2) 28px 56px
+  );
+  animation: driftHorizontal 7s linear infinite;
+}
+
+.exercise-stage.bg-shift::after {
+  inset: -18%;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.04) 0 24px,
+      rgba(0,0,0,0.16) 24px 48px
+    );
+  animation: driftVertical 9s linear infinite;
+  z-index: 1;
 }
 
 .trail-svg {
@@ -659,12 +692,14 @@ body[data-theme="light"] .exercise-stage::after {
 
 .rating-grid {
   display: grid;
-  grid-template-columns: repeat(11, minmax(0, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(11, minmax(76px, 1fr));
+  gap: 1rem;
+  align-items: stretch;
 }
 
 .rating-grid button {
-  min-height: 84px;
+  min-height: 96px;
+  padding: 0.9rem 0.5rem;
   font-size: 1.8rem;
   font-weight: 900;
   color: var(--ink);
@@ -698,14 +733,14 @@ textarea {
   resize: vertical;
 }
 
-@keyframes subtleStageShift {
-  0% { filter: hue-rotate(0deg) saturate(1); }
-  100% { filter: hue-rotate(18deg) saturate(1.08); }
-}
-
-@keyframes driftStripes {
+@keyframes driftHorizontal {
   0% { transform: translateX(0); }
   100% { transform: translateX(-120px); }
+}
+
+@keyframes driftVertical {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-120px); }
 }
 
 body.session-mode .hero,
@@ -747,7 +782,8 @@ body.session-mode .banner {
   }
 
   .rating-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(72px, 1fr));
+    gap: 0.85rem;
   }
 
   .home-button {
@@ -785,7 +821,8 @@ body.session-mode .banner {
   }
 
   .rating-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(72px, 1fr));
+    gap: 0.75rem;
   }
 
   .exercise-stage {

@@ -11,7 +11,9 @@ const heroBanner = document.getElementById("hero-banner");
 const controls = {
   bpm: document.getElementById("bpm"),
   duration: document.getElementById("duration"),
+  targetAmplitude: document.getElementById("target-amplitude"),
   plane: document.getElementById("plane"),
+  targetMotion: document.getElementById("target-motion"),
   position: document.getElementById("position"),
   surface: document.getElementById("surface"),
 };
@@ -19,6 +21,7 @@ const controls = {
 const display = {
   bpmValue: document.getElementById("bpm-value"),
   durationValue: document.getElementById("duration-value"),
+  targetAmplitudeValue: document.getElementById("target-amplitude-value"),
   setupPreview: document.getElementById("setup-preview"),
   setNumber: document.getElementById("set-number"),
   countdownNumber: document.getElementById("countdown-number"),
@@ -44,6 +47,9 @@ const actions = {
 
 const ratingGrid = document.getElementById("rating-grid");
 const themeButtons = [...document.querySelectorAll(".theme-icon")];
+const focusTarget = document.getElementById("focus-target");
+const pulseRing = document.getElementById("pulse-ring");
+const pulseCenter = document.getElementById("pulse-center");
 
 const MAX_SETS = 3;
 let setResults = [];
@@ -52,6 +58,7 @@ let selectedRating = null;
 let countdownTimer = null;
 let sessionTimer = null;
 let beatTimer = null;
+let targetMotionFrame = null;
 let exerciseStartedAt = null;
 let audioContext = null;
 let deviceThemeQuery = null;
@@ -141,16 +148,20 @@ function updateSetupPreview() {
   const config = getCurrentConfig();
   display.bpmValue.textContent = config.bpm;
   display.durationValue.textContent = config.duration;
+  display.targetAmplitudeValue.textContent = config.targetAmplitude;
   display.setupPreview.textContent =
     `${config.plane} head turns for ${config.duration} seconds at ${config.bpm} BPM, ` +
-    `${config.position.toLowerCase()} on ${config.surface.toLowerCase()} surface, with audible beep.`;
+    `${config.targetMotionLabel} at ${config.targetAmplitude}px amplitude, ${config.position.toLowerCase()} on ${config.surface.toLowerCase()} surface, with audible beep.`;
 }
 
 function getCurrentConfig() {
   return {
     bpm: Number(controls.bpm.value),
     duration: Number(controls.duration.value),
+    targetAmplitude: Number(controls.targetAmplitude.value),
     plane: controls.plane.value,
+    targetMotion: controls.targetMotion.value,
+    targetMotionLabel: formatTargetMotion(controls.targetMotion.value),
     position: controls.position.value,
     surface: controls.surface.value,
   };
@@ -213,9 +224,10 @@ function beginExercise() {
   display.instructionLine.textContent =
     `Keep eyes on the center target while moving the head ${currentSetConfig.plane.toLowerCase()}.`;
   display.metaLine.textContent =
-    `${currentSetConfig.plane} | ${currentSetConfig.position} | ${currentSetConfig.surface} surface`;
+    `${currentSetConfig.plane} | ${currentSetConfig.targetMotionLabel} | ${currentSetConfig.targetAmplitude}px | ${currentSetConfig.position} | ${currentSetConfig.surface} surface`;
   updateRemainingTime(currentSetConfig.duration);
   showScreen("exercise");
+  updateTargetMotionPosition();
 
   clearInterval(sessionTimer);
   clearInterval(beatTimer);
@@ -236,11 +248,14 @@ function beginExercise() {
   }, beatInterval);
 
   playBeep(880, 0.08, true);
+  startTargetMotion();
 }
 
 function finishExercise(endedEarly) {
   clearInterval(sessionTimer);
   clearInterval(beatTimer);
+  cancelAnimationFrame(targetMotionFrame);
+  resetTargetMotionPosition();
 
   const elapsedSeconds = Math.max(
     1,
@@ -317,7 +332,7 @@ function buildSoapNote() {
   const objectiveSets = setResults
     .map((set, index) => {
       const durationText = `${set.completedDuration} seconds${set.endedEarly ? " (ended early)" : ""}`;
-      return `Set ${index + 1}: gaze stability exercise completed in ${set.position.toLowerCase()} on ${set.surface.toLowerCase()} surface, ${set.plane.toLowerCase()} head movement, ${set.bpm} BPM, ${durationText}, with audible metronome`;
+      return `Set ${index + 1}: gaze stability exercise completed in ${set.position.toLowerCase()} on ${set.surface.toLowerCase()} surface, ${set.plane.toLowerCase()} head movement, ${set.targetMotionLabel.toLowerCase()} at ${set.targetAmplitude}px amplitude, ${set.bpm} BPM, ${durationText}, with audible metronome`;
     })
     .join(". ");
 
@@ -345,6 +360,8 @@ function playBeep(frequency, duration, enabled) {
   if (!enabled) {
     return;
   }
+
+  pulseTarget();
 
   if (!audioContext) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -374,14 +391,28 @@ function playBeep(frequency, duration, enabled) {
   oscillator.stop(audioContext.currentTime + duration);
 }
 
+function pulseTarget() {
+  [pulseRing, pulseCenter].forEach((element) => {
+    if (!element) {
+      return;
+    }
+
+    element.classList.remove("is-pulsing");
+    void element.offsetWidth;
+    element.classList.add("is-pulsing");
+  });
+}
+
 function clearAllTimers() {
   clearInterval(countdownTimer);
   clearInterval(sessionTimer);
   clearInterval(beatTimer);
+  cancelAnimationFrame(targetMotionFrame);
 }
 
 function resetSession() {
   clearAllTimers();
+  resetTargetMotionPosition();
   setResults = [];
   currentSetConfig = null;
   selectedRating = null;
@@ -408,8 +439,59 @@ function buildBriefSummary() {
     `${Math.min(...setResults.map((set) => set.bpm))} to ${Math.max(...setResults.map((set) => set.bpm))} BPM ` +
     `for durations between ${Math.min(...setResults.map((set) => set.completedDuration))} and ` +
     `${Math.max(...setResults.map((set) => set.completedDuration))} seconds. ` +
+    `Target motion ranged from ${setResults[0].targetMotionLabel.toLowerCase()} to ${finalSet.targetMotionLabel.toLowerCase()}. ` +
     `Post-activity dizziness averaged ${averageDizziness}/10, and the patient performed the final set ` +
     `in ${finalSet.position.toLowerCase()} on a ${finalSet.surface.toLowerCase()} surface.`;
+}
+
+function startTargetMotion() {
+  cancelAnimationFrame(targetMotionFrame);
+
+  if (!focusTarget || currentSetConfig.targetMotion === "stationary") {
+    resetTargetMotionPosition();
+    return;
+  }
+
+  const animate = () => {
+    updateTargetMotionPosition();
+    targetMotionFrame = requestAnimationFrame(animate);
+  };
+
+  targetMotionFrame = requestAnimationFrame(animate);
+}
+
+function updateTargetMotionPosition() {
+  if (!focusTarget || !currentSetConfig) {
+    return;
+  }
+
+  if (currentSetConfig.targetMotion === "stationary") {
+    resetTargetMotionPosition();
+    return;
+  }
+
+  const elapsedMs = exerciseStartedAt ? Date.now() - exerciseStartedAt : 0;
+  const phase = (elapsedMs / 1000) * ((currentSetConfig.bpm / 60) * Math.PI * 2);
+  const amplitude = currentSetConfig.targetAmplitude;
+  const offset = Math.sin(phase) * amplitude;
+  const x = currentSetConfig.targetMotion === "horizontal" ? offset : 0;
+  const y = currentSetConfig.targetMotion === "vertical" ? offset : 0;
+  focusTarget.style.transform = `translate(${x}px, ${y}px)`;
+}
+
+function resetTargetMotionPosition() {
+  if (focusTarget) {
+    focusTarget.style.transform = "translate(0, 0)";
+  }
+}
+
+function formatTargetMotion(value) {
+  const labels = {
+    stationary: "stationary target",
+    horizontal: "side-to-side target",
+    vertical: "up-and-down target",
+  };
+  return labels[value] || value;
 }
 
 initialize();

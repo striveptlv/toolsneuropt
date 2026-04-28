@@ -56,14 +56,31 @@
             <strong><span id="duration-value">30</span> seconds</strong>
           </div>
         </label>
+
+        <label class="field">
+          <span>Target Motion Amplitude</span>
+          <div class="range-wrap">
+            <input id="target-amplitude" type="range" min="0" max="120" step="5" value="72">
+            <strong><span id="target-amplitude-value">72</span> px</strong>
+          </div>
+        </label>
       </div>
 
-      <div class="grid four-up">
+      <div class="grid five-up">
         <label class="field">
           <span>Movement Plane</span>
           <select id="plane">
             <option value="Horizontal">Horizontal</option>
             <option value="Vertical">Vertical</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Target Motion</span>
+          <select id="target-motion">
+            <option value="stationary">Stationary</option>
+            <option value="horizontal">Side to Side</option>
+            <option value="vertical">Up and Down</option>
           </select>
         </label>
 
@@ -130,10 +147,12 @@
       </div>
 
       <div class="target-stage">
-        <div class="target-ring ring-outer"></div>
-        <div class="target-ring ring-middle"></div>
-        <div class="target-ring ring-inner"></div>
-        <div class="target-center"></div>
+        <div id="focus-target" class="focus-target">
+          <div class="target-ring ring-outer"></div>
+          <div class="target-ring ring-middle"></div>
+          <div id="pulse-ring" class="target-ring ring-inner"></div>
+          <div id="pulse-center" class="target-center"></div>
+        </div>
       </div>
 
       <div class="session-instructions">

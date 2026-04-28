@@ -697,19 +697,22 @@ function formatPattern(pattern) {
 function formatBackground(backgroundMode) {
   const labels = {
     none: "none",
-    subtle: "shift",
-    optokinetic: "stripes",
+    shift: "shift",
+    "stripes-horizontal": "stripes horizontal",
+    "stripes-vertical": "stripes vertical",
   };
   return labels[backgroundMode] || backgroundMode;
 }
 
 function applyBackgroundMode(mode) {
-  exerciseStage.classList.remove("bg-subtle", "bg-optokinetic");
+  exerciseStage.classList.remove("bg-shift", "bg-stripes-horizontal", "bg-stripes-vertical");
 
-  if (mode === "subtle") {
-    exerciseStage.classList.add("bg-subtle");
-  } else if (mode === "optokinetic") {
-    exerciseStage.classList.add("bg-optokinetic");
+  if (mode === "shift") {
+    exerciseStage.classList.add("bg-shift");
+  } else if (mode === "stripes-horizontal") {
+    exerciseStage.classList.add("bg-stripes-horizontal");
+  } else if (mode === "stripes-vertical") {
+    exerciseStage.classList.add("bg-stripes-vertical");
   }
 }
 

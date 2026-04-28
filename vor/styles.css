@@ -314,6 +314,10 @@ button:disabled {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.five-up {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .field {
   display: grid;
   gap: 0.5rem;
@@ -484,9 +488,18 @@ body[data-theme="light"] .target-stage::before {
   pointer-events: none;
 }
 
+.focus-target {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  will-change: transform;
+}
+
 .target-ring,
 .target-center {
   position: absolute;
+  inset: 0;
+  margin: auto;
   border-radius: 999px;
 }
 
@@ -517,6 +530,50 @@ body[data-theme="light"] .target-stage::before {
   box-shadow: 0 0 0 10px rgba(255, 107, 87, 0.15);
 }
 
+.ring-inner,
+.target-center {
+  transition: transform 100ms ease-out, box-shadow 100ms ease-out;
+  transform-origin: center;
+}
+
+.ring-inner.is-pulsing {
+  animation: metronomePulseRing 220ms ease-out;
+}
+
+.target-center.is-pulsing {
+  animation: metronomePulseCenter 220ms ease-out;
+}
+
+@keyframes metronomePulseRing {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 20px rgba(57, 184, 255, 0.12);
+  }
+  40% {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 28px rgba(57, 184, 255, 0.2);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 20px rgba(57, 184, 255, 0.12);
+  }
+}
+
+@keyframes metronomePulseCenter {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(255, 107, 87, 0.15);
+  }
+  40% {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 16px rgba(255, 107, 87, 0.22);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(255, 107, 87, 0.15);
+  }
+}
+
 .session-instructions {
   text-align: center;
 }
@@ -544,13 +601,14 @@ body[data-theme="light"] .target-stage::before {
 
 .rating-grid {
   display: grid;
-  grid-template-columns: repeat(11, minmax(0, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(11, minmax(76px, 1fr));
+  gap: 1rem;
   margin-top: 1rem;
 }
 
 .rating-button {
-  min-height: 84px;
+  min-height: 96px;
+  padding: 0.9rem 0.5rem;
   font-size: clamp(1.8rem, 5vw, 2.8rem);
   font-weight: 900;
   color: var(--ink);
@@ -618,8 +676,13 @@ textarea {
   .two-up,
   .three-up,
   .four-up,
+  .five-up,
   .rating-grid {
     grid-template-columns: 1fr;
+  }
+
+  .rating-grid {
+    gap: 0.85rem;
   }
 
   .target-stage {
